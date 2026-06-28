@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Hoàng Code - Key System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0b0e1a;
+            padding: 16px;
+        }
+        .card {
+            max-width: 500px;
+            width: 100%;
+            background: linear-gradient(145deg, #141b2b, #1a2335);
+            border-radius: 36px;
+            padding: 30px 20px 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+            text-align: center;
+            border: 1px solid rgba(255,215,0,0.1);
+        }
+        .badge {
+            background: rgba(0,255,150,0.1);
+            border: 1px solid rgba(0,255,150,0.15);
+            border-radius: 50px;
+            padding: 5px 16px;
+            display: inline-block;
+            color: #00ff96;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+        h1 { font-size: 24px; color: #fff; margin-bottom: 4px; }
+        h1 span { color: #ffd700; }
+        .sub { color: #8892b0; font-size: 14px; margin-bottom: 22px; }
+        .key-box {
+            background: rgba(0,0,0,0.5);
+            border-radius: 18px;
+            padding: 18px 12px;
+            margin: 16px 0;
+            border: 1px dashed rgba(255,215,0,0.25);
+        }
+        #accessKey {
+            font-size: 26px;
+            font-weight: 700;
+            color: #ffd700;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        .status-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 14px 0 10px;
+            font-size: 13px;
+            color: #8892b0;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: #00ff96;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff96;
+            animation: pulse 1.8s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .status-active { color: #00ff96; font-weight: 600; }
+        .expiry { color: #fbbf24; font-size: 12px; background: rgba(251,191,36,0.08); padding: 4px 12px; border-radius: 50px; border: 1px solid rgba(251,191,36,0.12); }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: rgba(255,255,255,0.05);
+            color: #ccd6f6;
+            border: 1px solid rgba(255,255,255,0.06);
+            flex: 1 1 auto;
+            min-width: 100px;
+        }
+        .btn-primary { background: linear-gradient(135deg, #f7971e, #ffd200); color: #0b0e1a; border: none; font-weight: 700; }
+        .btn-copy { background: rgba(0,255,200,0.08); border-color: rgba(0,255,200,0.15); color: #00ffc8; }
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: #1a2335; padding: 10px 22px; border-radius: 50px;
+            color: #fff; border: 1px solid #2a3455; font-size: 13px;
+            opacity: 0; transition: opacity 0.35s; pointer-events: none; z-index: 999;
+        }
+        .toast.show { opacity: 1; }
+        .gen-info { color: #4a5a7a; font-size: 11px; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 16px; }
+        .gen-info strong { color: #ffd700; }
+        .api-status {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 8px;
+            color: #8892b0;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="badge">✦ HOÀNG CODE</div>
+    <h1># Key <span>đã sẵn sàng</span> ✦</h1>
+    <p class="sub">Script tự động lấy key khi bấm GET KEY</p>
+
+    <div class="key-box">
+        <div style="color:#a8b2d1;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;">🔑 Access Key</div>
+        <div id="accessKey">⏳ Chờ request từ script...</div>
+    </div>
+
+    <div class="api-status" id="apiStatus">📡 Chưa có request</div>
+
+    <div class="status-row">
+        <span><span class="status-dot"></span><span class="status-active">● ACTIVE</span></span>
+        <span class="expiry" id="expiryText">⏳ Hết hạn sau: 3 ngày</span>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary" id="manualGenBtn">🔄 TẠO KEY THỦ CÔNG</button>
+        <button class="btn btn-copy" id="copyBtn">📋 SAO CHÉP</button>
+    </div>
+
+    <div class="gen-info">
+        ⚡ Prefix: <strong>HOANG_</strong> · Sản phẩm: <strong>Hoàng Code Script</strong> · Hạn 3 ngày
+    </div>
+</div>
+
+<div id="toast" class="toast">✅ Đã sao chép!</div>
+
+<script>
+    (function() {
+        const CONFIG = {
+            prefix: 'HOANG',
+            keyLength: 8,
+            expiryDays: 3,
+            product: 'Hoàng Code Script'
+        };
+
+        const accessKeyEl = document.getElementById('accessKey');
+        const copyBtn = document.getElementById('copyBtn');
+        const manualBtn = document.getElementById('manualGenBtn');
+        const expiryEl = document.getElementById('expiryText');
+        const apiStatus = document.getElementById('apiStatus');
+        const toast = document.getElementById('toast');
+
+        let currentKey = '';
+        let expiryTimestamp = 0;
+
+        function showToast(msg, isError = false) {
+            toast.textContent = msg;
+            toast.style.borderColor = isError ? '#f87171' : '#2a3455';
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function generateKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let random = '';
+            for (let i = 0; i < CONFIG.keyLength; i++) {
+                random += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return CONFIG.prefix + '_' + random;
+        }
+
+        function updateKey(key) {
+            currentKey = key;
+            accessKeyEl.textContent = key;
+            expiryTimestamp = Date.now() + CONFIG.expiryDays * 24 * 60 * 60 * 1000;
+            updateExpiryCountdown();
+            try {
+                localStorage.setItem('hoang_key', key);
+                localStorage.setItem('hoang_expiry', expiryTimestamp);
+            } catch(e) {}
+        }
+
+        function updateExpiryCountdown() {
+            if (!expiryTimestamp) {
+                expiryEl.textContent = '⏳ Hết hạn: --:--:--';
+                return;
+            }
+            const diff = Math.max(0, expiryTimestamp - Date.now());
+            const days = Math.floor(diff / 86400000);
+            const hours = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+            const mins = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+            const secs = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+            expiryEl.textContent = days > 0 ? `⏳ Hết hạn sau: ${days} ngày ${hours}:${mins}:${secs}` : `⏳ Hết hạn sau: ${hours}:${mins}:${secs}`;
+        }
+
+        // === XỬ LÝ REQUEST TỪ SCRIPT ===
+        function handleAPIRequest() {
+            const newKey = generateKey();
+            updateKey(newKey);
+            apiStatus.textContent = '📡 Request từ script - Key mới: ' + newKey;
+            apiStatus.style.color = '#00ff96';
+            showToast('✅ Script đã lấy key mới: ' + newKey);
+            
+            // Cập nhật URL để script có thể đọc
+            try {
+                const url = new URL(window.location);
+                url.searchParams.set('key', newKey);
+                url.searchParams.set('status', 'success');
+                window.history.replaceState({}, '', url);
+            } catch(e) {}
+            return newKey;
+        }
+
+        // === KIỂM TRA URL TỪ SCRIPT ===
+        function checkURLFromScript() {
+            const params = new URLSearchParams(window.location.search);
+            const action = params.get('action');
+            if (action === 'getkey') {
+                const newKey = handleAPIRequest();
+                // Trả về key dạng text cho script (nếu script dùng HttpGet)
+                document.body.innerHTML = newKey;
+                return true;
+            }
+            // Nếu script gửi request kiểu khác
+            const key = params.get('key');
+            if (key && key.startsWith(CONFIG.prefix + '_')) {
+                updateKey(key);
+                apiStatus.textContent = '📡 Key từ script: ' + key;
+                return true;
+            }
+            return false;
+        }
+
+        // === KHỞI TẠO ===
+        function init() {
+            // Kiểm tra URL trước
+            if (checkURLFromScript()) {
+                return;
+            }
+
+            // Khôi phục từ localStorage
+            let savedKey = '', savedExpiry = 0;
+            try {
+                savedKey = localStorage.getItem('hoang_key') || '';
+                savedExpiry = parseInt(localStorage.getItem('hoang_expiry') || '0');
+            } catch(e) {}
+
+            if (savedKey && savedExpiry > Date.now() && savedKey.startsWith(CONFIG.prefix + '_')) {
+                updateKey(savedKey);
+                apiStatus.textContent = '📡 Khôi phục key đã lưu';
+            } else {
+                // Tạo key mặc định
+                const defaultKey = generateKey();
+                updateKey(defaultKey);
+                apiStatus.textContent = '📡 Key mặc định - Chờ script request';
+            }
+
+            setInterval(updateExpiryCountdown, 1000);
+
+            // Sự kiện copy
+            copyBtn.addEventListener('click', function() {
+                const key = accessKeyEl.textContent;
+                if (!key || key === '⏳ Chờ request từ script...') {
+                    showToast('⚠️ Chưa có key!', true);
+                    return;
+                }
+                navigator.clipboard.writeText(key).then(() => {
+                    showToast('✅ Đã sao chép: ' + key);
+                }).catch(() => {
+                    const ta = document.createElement('textarea');
+                    ta.value = key;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    ta.remove();
+                    showToast('✅ Đã sao chép');
+                });
+            });
+
+            // Nút tạo thủ công
+            manualBtn.addEventListener('click', function() {
+                const newKey = generateKey();
+                updateKey(newKey);
+                apiStatus.textContent = '📡 Tạo thủ công - Key: ' + newKey;
+                showToast('✅ Key mới: ' + newKey);
+            });
+
+            // Lắng nghe thay đổi URL (script gửi request dạng popstate)
+            window.addEventListener('popstate', function() {
+                checkURLFromScript();
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+</script>
+</body>
+</html>
